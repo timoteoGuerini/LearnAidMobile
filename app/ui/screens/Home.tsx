@@ -25,6 +25,9 @@ import {
 import {Camera, CameraType} from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import {StyleSheet} from 'react-native';
+import axios from 'axios';
+import {err} from 'react-native-svg/lib/typescript/xml';
+import ky from 'ky';
 
 export const backgroundUrl =
   'E:/Escritorio/Eter/LearnAid/LearnAid mobile/LearnAidMobile/app/assets/background.png';
@@ -56,7 +59,7 @@ export default function Home() {
 
   const [cameraOpen, setCameraOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState(false);
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState();
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [play, setPlay] = useState(false);
@@ -78,10 +81,60 @@ export default function Home() {
       try {
         const data = await cameraRef.current.takePictureAsync();
         console.log('DATA: ', data);
-        setImage(data.uri);
+        setImage(data);
       } catch (e) {
         console.log('Exception error: ', e);
       }
+    }
+  };
+
+  const handleSendImage = async (image: any) => {
+    const formData = new FormData();
+    formData.append('Imagen', {
+      uri: image.uri,
+      name: 'imagen.jpg',
+      type: 'image/jpeg', // Cambiado a 'jpeg' según la extensión típica de una imagen
+    });
+    try {
+      var response = axios
+        .postForm(
+          'https://2l96ld3r-5261.brs.devtunnels.ms/api/v1/Mobile/generar-texto',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          },
+        )
+        .then(response => {
+          console.log('RESPUESTA IMAGEN: ', response.data);
+          setDataText(response.data);
+          const formDataText = new FormData();
+          formDataText.append('texto', {
+            texto: response.data,
+          });
+          var responseText = axios.postForm(
+            'https://2l96ld3r-5261.brs.devtunnels.ms/api/v1/Mobile/generar-texto',
+            formDataText,
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            },
+          );
+        })
+        .catch(err => {
+          console.log('CATCH ERROR: ', err);
+        });
+      //const response = await ky.post('https://localhost:7261/api/v1/Usuarios/crear-usuario', {
+      //    headers: {"Content-Type": "multipart/form-data"},
+      //    body: formData
+      //});
+
+      //console.log('RESPUESTA: ', response);
+      // Manejar la respuesta del POST
+    } catch (error) {
+      console.log('ERROR AL PROCESAR LA IMAGEN:', error);
     }
   };
 
@@ -216,7 +269,7 @@ export default function Home() {
                 width={'30%'}
                 height={'100%'}
                 background={'black'}
-                onPress={() => setPlay(!play)}>
+                onPress={() => handlePlayText(dataText)}>
                 <Center>
                   <Text color={'white'} fontSize={17}>
                     {!play ? 'Reproducir' : 'Pausar'}
@@ -400,7 +453,7 @@ export default function Home() {
               ref={cameraRef}></Camera>
           ) : (
             <Image
-              source={{uri: image}}
+              source={{uri: image.uri}}
               style={styles.camera}
               alt="image.jpg"
             />
@@ -418,9 +471,10 @@ export default function Home() {
               <Button
                 height={'100%'}
                 width={'50%'}
-                onPress={() =>
-                  /*ENVIAR IMAGEN AL BACK*/ setCameraOpen(!cameraOpen)
-                }
+                onPress={() => {
+                  handleSendImage(image);
+                  setCameraOpen(!cameraOpen);
+                }}
                 style={{backgroundColor: 'green'}}>
                 CONSERVAR
               </Button>
