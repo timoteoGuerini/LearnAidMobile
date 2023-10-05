@@ -21,11 +21,9 @@ import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {HeaderLogo} from '../components/headerLogo';
 
-export const backgroundUrl =
-  'E:/Escritorio/Eter/LearnAid/LearnAid mobile/LearnAidMobile/app/assets/background.png';
+export const backgroundUrl = '../../assets/background.png';
 
-export const textLogoUrl =
-  'E:/Escritorio/Eter/LearnAid/LearnAid mobile/LearnAidMobile/app/assets/learn-aid-text-logo.png';
+export const textLogoUrl = '../../assets/learn-aid-text-logo.png';
 
 export default function Home() {
   const [dataText, setDataText] = useState(

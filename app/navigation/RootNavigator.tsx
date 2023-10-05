@@ -7,8 +7,7 @@ import Settings from '../ui/screens/Settings';
 import {ImageBackground} from 'react-native';
 
 const Stack = createNativeStackNavigator();
-const backgroundUrl =
-  'E:/Escritorio/Eter/LearnAid/LearnAid mobile/LearnAidMobile/app/assets/background.png';
+const backgroundUrl = '../assets/background.png';
 
 function RootNavigator() {
   return (

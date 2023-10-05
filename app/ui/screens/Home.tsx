@@ -28,32 +28,29 @@ import {StyleSheet} from 'react-native';
 import axios from 'axios';
 import {err} from 'react-native-svg/lib/typescript/xml';
 import ky from 'ky';
+import SoundPlayer from 'react-native-sound-player';
+import { Audio } from 'expo-av';
+import TrackPlayer from 'react-native-track-player';
+import Sound from 'react-native-sound';
 
-export const backgroundUrl =
-  'E:/Escritorio/Eter/LearnAid/LearnAid mobile/LearnAidMobile/app/assets/background.png';
+export const backgroundUrl = '../../assets/background.png';
 
-export const textLogoUrl =
-  'E:/Escritorio/Eter/LearnAid/LearnAid mobile/LearnAidMobile/app/assets/learn-aid-text-logo.png';
+export const textLogoUrl = '../../assets/learn-aid-text-logo.png';
 
-export const cameraIconUrl =
-  'E:/Escritorio/Eter/LearnAid/LearnAid mobile/LearnAidMobile/app/assets/cameraIcon.png';
+export const cameraIconUrl = '../../assets/cameraIcon.png';
 
-export const settingsIconUrl =
-  'E:/Escritorio/Eter/LearnAid/LearnAid mobile/LearnAidMobile/app/assets/settingsIcon.png';
+export const settingsIconUrl = '../../assets/settingsIcon.png';
 
-export const addIconUrl =
-  'E:/Escritorio/Eter/LearnAid/LearnAid mobile/LearnAidMobile/app/assets/addIcon.png';
+export const addIconUrl = '../../assets/addIcon.png';
 
-export const forwardIconUrl =
-  'E:/Escritorio/Eter/LearnAid/LearnAid mobile/LearnAidMobile/app/assets/forwardIcon.png';
+export const forwardIconUrl = '../../assets/forwardIcon.png';
 
-export const backwardIconUrl =
-  'E:/Escritorio/Eter/LearnAid/LearnAid mobile/LearnAidMobile/app/assets/backwardIcon.png';
+export const backwardIconUrl = '../../assets/backwardIcon.png';
 
 export default function Home() {
-  const [dataText, setDataText] = useState(
-    'Lorem ipsum dolor sit amet consectetur adipisicing elit. Molasdasdasdasdasdestia blanditiis consectetur cum aut ipsum placeat labore quam, tempore praesentium perferendis excepturi facilis eligendi nemo officiis nisi fugit omnis debitis esse? Lorem ipsum dolor sit amet consectetur, adipisicing elit. Totam amet autem sit eaque veniam quas delectus quis laudantium maxime doloremque perspiciatis quasi, suscipit eum, cum a voluptatibus ullam sapiente voluptates.',
-  );
+  const [dataText, setDataText] = useState();
+  const [audio, setAudio] = useState();
+
   const [tamañoTexto, setTamañoTexto] = useState(25);
   const [settingsModalVisible, setSettingsModalVisible] = useState(false);
 
@@ -88,6 +85,21 @@ export default function Home() {
     }
   };
 
+  const handleSendText = async (text: any) =>{
+          const response = await ky.get(`https://rzpxn389-5261.brs.devtunnels.ms/api/v1/Mobile/generar-audio/${text}`, {
+            responseType: 'blob',
+        })
+          .then((response) => {
+            console.log(response.url);        
+            setAudio(response.url);
+            console.log(audio);
+          })
+          .catch((err) => {
+            console.log(err);
+          })
+};
+          
+
   const handleSendImage = async (image: any) => {
     const formData = new FormData();
     formData.append('Imagen', {
@@ -98,7 +110,7 @@ export default function Home() {
     try {
       var response = axios
         .postForm(
-          'https://2l96ld3r-5261.brs.devtunnels.ms/api/v1/Mobile/generar-texto',
+          'https://rzpxn389-5261.brs.devtunnels.ms/api/v1/Mobile/generar-texto',
           formData,
           {
             headers: {
@@ -109,19 +121,7 @@ export default function Home() {
         .then(response => {
           console.log('RESPUESTA IMAGEN: ', response.data);
           setDataText(response.data);
-          const formDataText = new FormData();
-          formDataText.append('texto', {
-            texto: response.data,
-          });
-          var responseText = axios.postForm(
-            'https://2l96ld3r-5261.brs.devtunnels.ms/api/v1/Mobile/generar-texto',
-            formDataText,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
-            },
-          );
+          handleSendText(response.data);
         })
         .catch(err => {
           console.log('CATCH ERROR: ', err);
@@ -141,6 +141,22 @@ export default function Home() {
   /* if (hasCameraPermission === false) {
     return <Text>No tienes acceso a la cámara con esta aplicación</Text>;
   }*/
+  const getPermissions = async () => {
+    MediaLibrary.requestPermissionsAsync();
+    const cameraStatus = await Camera.requestCameraPermissionsAsync();
+    setHasCameraPermission(cameraStatus.status === 'granted');
+  };
+
+  const handleCameraOpen = () => {
+    if (!hasCameraPermission) {
+      getPermissions();
+    }
+    setCameraOpen(true);
+  }
+
+  const handleReproducir = async () => {
+      console.log('entro1');
+  }
 
   return (
     <>
@@ -212,7 +228,7 @@ export default function Home() {
                 width={'30%'}
                 height={'100%'}
                 style={{backgroundColor: 'lightblue'}}
-                onPress={() => setCameraOpen(true)}>
+                onPress={() => handleCameraOpen()}>
                 <Center>
                   <Image
                     source={require(cameraIconUrl)}
@@ -269,7 +285,7 @@ export default function Home() {
                 width={'30%'}
                 height={'100%'}
                 background={'black'}
-                onPress={() => handlePlayText(dataText)}>
+                onPress={() => handleReproducir()}>
                 <Center>
                   <Text color={'white'} fontSize={17}>
                     {!play ? 'Reproducir' : 'Pausar'}
