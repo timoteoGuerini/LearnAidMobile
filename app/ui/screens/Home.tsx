@@ -28,10 +28,7 @@ import {StyleSheet} from 'react-native';
 import axios from 'axios';
 import {err} from 'react-native-svg/lib/typescript/xml';
 import ky from 'ky';
-import SoundPlayer from 'react-native-sound-player';
-import { Audio } from 'expo-av';
-import TrackPlayer from 'react-native-track-player';
-import Sound from 'react-native-sound';
+//import Sound from 'react-native-sound';
 
 export const backgroundUrl = '../../assets/background.png';
 
@@ -49,7 +46,7 @@ export const backwardIconUrl = '../../assets/backwardIcon.png';
 
 export default function Home() {
   const [dataText, setDataText] = useState();
-  const [audio, setAudio] = useState();
+  const [audio, setAudio] = useState('');
 
   const [tamañoTexto, setTamañoTexto] = useState(25);
   const [settingsModalVisible, setSettingsModalVisible] = useState(false);
@@ -85,20 +82,61 @@ export default function Home() {
     }
   };
 
-  const handleSendText = async (text: any) =>{
-          const response = await ky.get(`https://rzpxn389-5261.brs.devtunnels.ms/api/v1/Mobile/generar-audio/${text}`, {
-            responseType: 'blob',
-        })
-          .then((response) => {
-            console.log(response.url);        
-            setAudio(response.url);
-            console.log(audio);
-          })
-          .catch((err) => {
-            console.log(err);
-          })
-};
-          
+  /*let sound = null;
+  const handlePlayAudio = () => {
+    try {
+      // Detén cualquier reproducción existente si la hay
+      if (sound) {
+        sound.stop();
+        sound.release();
+      }
+
+      // Crea un nuevo objeto Sound con la URL del audio
+      sound = new Sound(audio, '', error => {
+        if (error) {
+          console.error('Error al cargar el audio:', error);
+        } else {
+          // Reproduce el audio
+          sound.play(success => {
+            if (success) {
+              console.log('Reproducción exitosa');
+            } else {
+              console.error('Error al reproducir el audio');
+            }
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error al reproducir el audio:', error);
+    }
+  };*/
+
+  const handleSendText = async text => {
+    try {
+      const response = await ky.get(
+        `https://2l96ld3r-5001.brs.devtunnels.ms/api/v1/Mobile/generar-audio/${text}`,
+        {
+          responseType: 'blob',
+        },
+      );
+
+      // Verifica que la respuesta sea exitosa (código de estado 200)
+      if (response.ok) {
+        console.log('RESPONSE SEND TEXT AUDIOURL: ', response.url);
+        setAudio(response.url);
+        // Convierte el blob en una URL de objeto y crea una URL válida
+
+        // Si deseas reproducir el audio, puedes hacerlo usando un elemento de audio
+      } else {
+        console.error(
+          'La solicitud no tuvo éxito. Código de estado:',
+          response.status,
+        );
+      }
+    } catch (error) {
+      console.error('Error al realizar la solicitud:', error);
+    }
+  };
 
   const handleSendImage = async (image: any) => {
     const formData = new FormData();
@@ -110,7 +148,7 @@ export default function Home() {
     try {
       var response = axios
         .postForm(
-          'https://rzpxn389-5261.brs.devtunnels.ms/api/v1/Mobile/generar-texto',
+          'https://2l96ld3r-5001.brs.devtunnels.ms/api/v1/Mobile/generar-texto',
           formData,
           {
             headers: {
@@ -152,11 +190,11 @@ export default function Home() {
       getPermissions();
     }
     setCameraOpen(true);
-  }
+  };
 
   const handleReproducir = async () => {
-      console.log('entro1');
-  }
+    console.log('entro1');
+  };
 
   return (
     <>
